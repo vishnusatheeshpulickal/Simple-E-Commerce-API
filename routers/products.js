@@ -4,9 +4,14 @@ const router = express.Router();
 const {Product} = require('../models/product');
 const mongoose = require('mongoose');
 
-// Get all products
+// Get all products and filtered products
 router.get('/',async(req,res)=>{
-    const products = await Product.find().select('name description price rating image').populate('category');  
+  let filter = {};
+      if(req.query.categories){
+      filter = {category:req.query.categories.split(',')}
+    }
+    console.log(filter);
+    const products = await Product.find(filter).select('name description price rating image').populate('category');  
    res.send(products)
 })
 
