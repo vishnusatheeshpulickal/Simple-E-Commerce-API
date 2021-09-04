@@ -18,20 +18,6 @@ router.get('/:id',async(req,res)=>{
    }
 })
 
-router.put('/:id',async(req,res)=>{
-    try{
-        let category = await Category.findByIdAndUpdate(req.params.id,{
-            name: req.body.name,
-            icon:req.body.icon,
-            color:req.body.color
-        },{new:true})
-        console.log(category)
-      if(!category) return res.status(400).json({success:false,message:'The category cannot be created!'});
-      res.status(200).send(category)
-    }catch(err){
-     return res.status(500).json({success:false,error:err})
-    }
-})
 
 router.post('/',async(req,res)=>{
     let category = new Category({

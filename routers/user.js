@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv/config');
 
 // User Signup section
-router.post('/signup',async(req,res)=>{
+router.post('/register',async(req,res)=>{
     const userEmail = await User.findOne({email: req.body.email});
     if(userEmail) return res.send({success:false,message:'Sorry this email already in use'})
     let user = await new User({
@@ -30,18 +30,11 @@ router.post('/login',async(req,res)=>{
    const user = await User.findOne({email:req.body.email});
    if(!user) return res.status(400).json({success:false,message:'User is not found'})
    if(user && bcrypt.compareSync(req.body.password,user.password)){
-       const token = jwt.sign({userEmail:user.email},process.env.JWT_SECRET,{expiresIn:'1d'})
+       const token = jwt.sign({userEmail:user.email,isAdmin:user.isAdmin,userId:user._id},process.env.JWT_SECRET,{expiresIn:'1d'})
        res.status(200).send({success:true,token:token})
    }else{
        return res.status(400).json({success:false,message:'Email or password is incorrect'});
    }
-})
-
-// List of all users
-router.get('/', async(req,res)=>{
-    let users = await User.find().select('-password');
-    if(!users) return res.status(400).json({success:false,message:'cannot get users'});
-    res.status(200).send(users)
 })
 
 //  user details
