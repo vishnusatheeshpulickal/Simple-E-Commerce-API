@@ -31,7 +31,7 @@ router.delete('/productdelete/:id',async(req,res)=>{
   })
 
   // Update product
-router.put('updateproduct/:id',async(req,res)=>{
+router.put('/updateproduct/:id',async(req,res)=>{
     if(!mongoose.isValidObjectId(req.body.category)){
       return res.status(500).json({success:false,message:'Invalid category Id'})
     }
