@@ -54,6 +54,17 @@ router.post('/',async(req,res)=>{
     const orderItemIdsResolved = await orderItemIds;
     console.log(orderItemIdsResolved);
 
+    const totalPrices = await Promise.all(orderItemIdsResolved.map(async orderItem =>{
+        let orderItems = await OrderItem.findById(orderItem).populate('product','price');
+        console.log("product",orderItems)
+        console.log('price',orderItems.product.price)
+        const totalPrice = orderItems.product.price * orderItems.quantity;
+        console.log('total from orderitems function',totalPrice)
+        return totalPrice
+    }))
+
+    const totalPrice = totalPrices.reduce((a,b)=>a+b,0);
+
     let order = await new Orders({
         orderItems:orderItemIdsResolved,
         shippingAddress:req.body.shippingAddress,
@@ -62,12 +73,14 @@ router.post('/',async(req,res)=>{
         district:req.body.district,
         phone:req.body.phone,
         status:req.body.status,
-        totalPrice:req.body.totalPrice,
+        totalPrice:totalPrice,
         user: req.body.user
     })
     order = await order.save();
     if(!order) return res.status(400).json({success:false,message:'Order cannot created'});
     res.status(201).send(order)
 })
+
+
 
 module.exports = router;    

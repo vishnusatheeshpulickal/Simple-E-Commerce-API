@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {User} = require('../models/user');
 const {Product} = require('../models/product');
+const {Orders} = require('../models/orders');
 
 // List of all users
 router.get('/userslist', async(req,res)=>{
@@ -81,7 +82,25 @@ router.put('/updateproduct/:id',async(req,res)=>{
 router.get('/usercount',async(req,res)=>{
   const count = await User.countDocuments();
   if(!count) return res.status(500).json({success:false});
-  res.status(200).send(count)
+  res.status(200).json({success:true,userscount:count})
+})
+
+// Total sales
+router.get('/totalsales',async(req,res)=>{
+    const totalSales = await Orders.aggregate([
+      {$group:{_id:null,totalSales:{$sum:'$totalPrice'}}}
+    ])
+
+    if(!totalSales) return res.status(400).json({success:false,message:'The order sales cannot be generated'});
+    res.status(200).send({totalsales:totalSales});
+})
+
+// Total orders
+router.get('/orderscount',async(req,res)=>{
+    const count = await Orders.countDocuments();
+    if(!count) return res.status(400).json({success:false,message:'The order count cannot be generated'});
+    console.log('total count',count)
+    res.status(200).json({success:true,total:count})
 })
 
 // Category update
