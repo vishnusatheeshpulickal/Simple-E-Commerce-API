@@ -3,6 +3,32 @@ const router = express.Router();
 const {User} = require('../models/user');
 const {Product} = require('../models/product');
 const {Orders} = require('../models/orders');
+const {Category} = require('../models/category');
+const multer = require('multer')
+
+const FILE_TYPE_MAP = {
+  'image/png':'png',
+  'image/jpeg':'jpeg',
+  'image/jpg':'jpg'
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error('Invalid file type')
+    if(isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, 'public/uploads')
+  },
+  filename: function (req, file, cb) {
+    const fileName = file.originalname.replace(' ','-');
+    const extension = FILE_TYPE_MAP[file.mimetype]
+    cb(null, `${fileName}-${Date.now()}.${extension}`);
+  }
+})
+
+const uploadOptions = multer({ storage: storage })
 
 // List of all users
 router.get('/userslist', async(req,res)=>{
@@ -55,9 +81,13 @@ router.put('/updateproduct/:id',async(req,res)=>{
   })
   
   //  Add new product
-  router.post('/newproduct/',async(req,res)=>{
+  router.post('/newproduct/',uploadOptions.single('image'),async(req,res)=>{
     const category = await Category.findById(req.body.category);
     if(!category) return res.status(400).send('Invalid category')
+    const file = req.file;
+    if(!file) return res.status(400).send('No images found in the request');
+    const fileName = req.file.filename;
+    const baseUrl = `${req.protocol}://${req.get('host')}/public/uploads/`
     
      const products = new Product({
       name: req.body.name,
@@ -68,7 +98,7 @@ router.put('/updateproduct/:id',async(req,res)=>{
       rating: req.body.rating,
       isFeatured: req.body.isFeatured,
       price: req.body.price,
-      image: req.body.image,
+      image: `${baseUrl}${fileName}`, 
       numberInStock: req.body.numberInStock,
       numReviews: req.body.numReviews,
       dataCreated: req.body.date,

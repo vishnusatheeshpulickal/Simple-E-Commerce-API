@@ -2,7 +2,7 @@ const express = require('express');
 const { Category } = require('../models/category');
 const router = express.Router();
 const {Product} = require('../models/product');
-const mongoose = require('mongoose');
+
 
 // Get all products and filtered products
 router.get('/',async(req,res)=>{
