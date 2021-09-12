@@ -11,7 +11,7 @@ router.get('/',async(req,res)=>{
       filter = {category:req.query.categories.split(',')}
     }
     console.log(filter);
-    const products = await Product.find(filter).select('name description price rating image').populate('category');  
+    const products = await Product.find(filter).select('name description price rating image images').populate('category');  
    res.send(products)
 })
 

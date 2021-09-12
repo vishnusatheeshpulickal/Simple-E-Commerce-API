@@ -5,6 +5,7 @@ const {Product} = require('../models/product');
 const {Orders} = require('../models/orders');
 const {Category} = require('../models/category');
 const multer = require('multer')
+const mongoose = require('mongoose')
 
 const FILE_TYPE_MAP = {
   'image/png':'png',
@@ -106,6 +107,24 @@ router.put('/updateproduct/:id',async(req,res)=>{
     const result = await products.save()
     console.log(result)
     res.status(201).json("Success")
+  })
+
+  // upload multiple images
+  router.put('/products/image-gallery/:id',uploadOptions.array('images',10),async(req,res)=>{
+     if(!mongoose.isValidObjectId(req.params.id)) return res.status(400).send({success:false,message:'Invalid product Id'})
+     const files = req.files;
+     const baseUrl = `${req.protocol}://${req.get('host')}/public/uploads/`
+     let imagesPath = [];
+     if(files){
+       files.map(file =>{
+         imagesPath.push(`${baseUrl}${file.filename}`)
+       })
+     }
+
+     const update = await Product.findByIdAndUpdate(req.params.id,{images: imagesPath},{new:true});
+     if(!update) return res.status(400).send({success: false,message:'Product cannot updated'});
+     res.status(200).send(update)
+
   })
 
   // users count
