@@ -4,6 +4,7 @@ const {User} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userValidate = require('../validations/userValidation')
+const {sendWelcomeMail} = require('../services/email')
 require('dotenv/config');
 
 // User Signup section
@@ -22,6 +23,8 @@ router.post('/register',userValidate,async(req,res)=>{
     })
     user = await user.save();
     if(!user) return res.status(400).send({success:false,message:'User cannot created'});
+    console.log(user)
+    await sendWelcomeMail(user.name,user.email)
     res.status(201).json({success:true,message:'User created successfully'});
 })
 
