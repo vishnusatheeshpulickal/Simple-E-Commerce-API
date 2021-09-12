@@ -3,10 +3,11 @@ const router = express.Router();
 const {User} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const userValidate = require('../validations/userValidation')
 require('dotenv/config');
 
 // User Signup section
-router.post('/register',async(req,res)=>{
+router.post('/register',userValidate,async(req,res)=>{
     const userEmail = await User.findOne({email: req.body.email});
     if(userEmail) return res.send({success:false,message:'Sorry this email already in use'})
     let user = await new User({

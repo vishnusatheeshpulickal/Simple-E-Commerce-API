@@ -6,6 +6,7 @@ const {Orders} = require('../models/orders');
 const {Category} = require('../models/category');
 const multer = require('multer')
 const mongoose = require('mongoose')
+const validateProduct = require('../validations/productValidation')
 
 const FILE_TYPE_MAP = {
   'image/png':'png',
@@ -82,7 +83,7 @@ router.put('/updateproduct/:id',async(req,res)=>{
   })
   
   //  Add new product
-  router.post('/newproduct/',uploadOptions.single('image'),async(req,res)=>{
+  router.post('/newproduct/',[validateProduct,uploadOptions.single('image')],async(req,res)=>{
     const category = await Category.findById(req.body.category);
     if(!category) return res.status(400).send('Invalid category')
     const file = req.file;
