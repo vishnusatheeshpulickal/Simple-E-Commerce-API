@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {User} = require('../models/user');
+const Token = require('../models/token');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userValidate = require('../validations/userValidation')
-const {sendWelcomeMail} = require('../services/email')
+const {sendWelcomeMail,sendResetPasswordMail} = require('../services/email')
+const crypto = require('crypto')
 require('dotenv/config');
 
 // User Signup section
@@ -48,5 +50,33 @@ router.get('/:id',async(req,res)=>{
     res.status(200).send(user)
 })
 
+// Reset password request
+router.post('/passwordreset',async(req,res)=>{
+   const user = await User.findOne({email:req.body.email})
+   if(!user) return res.status(400).send({success:false,message:"user with given email doesn't exist"})
+   let token = await Token.findOne({userId:user._id})
+   if(!token){
+       token = await new Token({
+           userId:user._id,
+           token: crypto.randomBytes(32).toString('hex')
+       }) 
+       token = await token.save();
+   }
+   const link = `${req.protocol}://${req.get('host')}/api/v1/user/passwordreset/${user._id}/${token.token}`
+    const mail = await sendResetPasswordMail(user.email,link)
+    res.status(200).send('reset link sended')
+})
+
+// Reset password validation and updation
+router.post('/passwordreset/:userId/:token',async(req,res)=>{
+   let user = await User.findById(req.params.userId);
+   if(!user) return res.status(400).send({success:false,message:'Invalid link or expired'});
+   let token = await Token.findOne({userId:req.params.userId,token:req.params.token});
+   if(!token) return res.status(400).send({success:false,message:'Invalid link or expired'});
+   user.password = await bcrypt.hash(req.body.password,10);
+   user = await user.save();
+   token = await token.delete();
+   res.status(200).send(user)
+})
 
 module.exports = router;        
