@@ -5,6 +5,7 @@ const Token = require('../models/token');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userValidate = require('../validations/userValidation')
+const passwordResetValidation = require('../validations/passwordResetValidation')
 const {sendWelcomeMail,sendResetPasswordMail} = require('../services/email')
 const crypto = require('crypto')
 require('dotenv/config');
@@ -68,7 +69,7 @@ router.post('/passwordreset',async(req,res)=>{
 })
 
 // Reset password validation and updation
-router.post('/passwordreset/:userId/:token',async(req,res)=>{
+router.post('/passwordreset/:userId/:token',passwordResetValidation,async(req,res)=>{
    let user = await User.findById(req.params.userId);
    if(!user) return res.status(400).send({success:false,message:'Invalid link or expired'});
    let token = await Token.findOne({userId:req.params.userId,token:req.params.token});
