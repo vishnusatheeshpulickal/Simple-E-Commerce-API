@@ -65,7 +65,7 @@ router.post('/passwordreset',async(req,res)=>{
    }
    const link = `${req.protocol}://${req.get('host')}/api/v1/user/passwordreset/${user._id}/${token.token}`
     const mail = await sendResetPasswordMail(user.email,link)
-    res.status(200).send('reset link sended')
+    res.status(200).send({success: true,message:'Password reset link sended to your email, Please check your inbox.'})
 })
 
 // Reset password validation and updation
@@ -77,7 +77,8 @@ router.post('/passwordreset/:userId/:token',passwordResetValidation,async(req,re
    user.password = await bcrypt.hash(req.body.password,10);
    user = await user.save();
    token = await token.delete();
-   res.status(200).send(user)
+   res.status(200).send({success:true,message:'Password updated successfully'})
 })
 
 module.exports = router;        
+      

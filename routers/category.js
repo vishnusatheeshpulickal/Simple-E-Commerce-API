@@ -27,8 +27,8 @@ router.post('/',async(req,res)=>{
     })
      
     category = await category.save();
-    if(!category) return res.status(404).send('The category cannot be created!');
-    res.send(category)
+    if(!category) return res.status(400).send('The category cannot be created!');
+    res.status(201).send({success:true,message:'Category created successfully',details:category})
 })
 
 router.delete('/:id',async(req,res)=>{

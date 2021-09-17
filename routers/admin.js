@@ -176,4 +176,4 @@ router.delete('/deleteuser/:id',async(req,res)=>{
   res.status(200).json({success:true,message:'Successfully removed the user'})
 })
 
-module.exports = router;
+module.exports = router; 
